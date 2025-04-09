@@ -120,13 +120,35 @@ class PhysicsShapeQueryParameters3D;
 class PhysicsDirectSpaceState3D : public Object {
 	GDCLASS(PhysicsDirectSpaceState3D, Object);
 
+public:
+	struct ShapeParameters {
+		RID shape_rid;
+		Transform3D transform;
+		Vector3 motion;
+		real_t margin = 0.0;
+		HashSet<RID> exclude;
+		uint32_t collision_mask = UINT32_MAX;
+
+		bool collide_with_bodies = true;
+		bool collide_with_areas = false;
+	};
+
+	struct ShapeRestInfo {
+		Vector3 point;
+		Vector3 normal;
+		RID rid;
+		ObjectID collider_id;
+		int shape = 0;
+		Vector3 linear_velocity; // Velocity at contact point.
+	};
+
 private:
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query);
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
 	TypedArray<Vector3> _collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
-	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
+	ShapeRestInfo _get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
 
 protected:
 	static void _bind_methods();
@@ -177,27 +199,6 @@ public:
 
 	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) = 0;
 
-	struct ShapeParameters {
-		RID shape_rid;
-		Transform3D transform;
-		Vector3 motion;
-		real_t margin = 0.0;
-		HashSet<RID> exclude;
-		uint32_t collision_mask = UINT32_MAX;
-
-		bool collide_with_bodies = true;
-		bool collide_with_areas = false;
-	};
-
-	struct ShapeRestInfo {
-		Vector3 point;
-		Vector3 normal;
-		RID rid;
-		ObjectID collider_id;
-		int shape = 0;
-		Vector3 linear_velocity; // Velocity at contact point.
-	};
-
 	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) = 0;
 	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, ShapeRestInfo *r_info = nullptr) = 0;
 	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) = 0;
@@ -207,6 +208,7 @@ public:
 
 	PhysicsDirectSpaceState3D();
 };
+MAKE_PTRARG(PhysicsDirectSpaceState3D::ShapeRestInfo);
 
 class PhysicsServer3DRenderingServerHandler : public Object {
 	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)

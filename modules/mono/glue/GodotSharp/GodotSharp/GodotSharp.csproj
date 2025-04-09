@@ -116,6 +116,7 @@
     <Compile Include="Core\NativeInterop\VariantUtils.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.generic.cs" />
     <Compile Include="Core\NodePath.cs" />
+    <Compile Include="Core\PhysicsDirectSpaceState3D.cs" />
     <Compile Include="Core\Plane.cs" />
     <Compile Include="Core\Projection.cs" />
     <Compile Include="Core\Quaternion.cs" />

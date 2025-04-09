@@ -3860,6 +3860,41 @@ struct SortMethodWithHashes {
 	}
 };
 
+void BindingsGenerator::_add_custom_methods(TypeInterface &itype) {
+	//ClassDB::ClassInfo *type = ClassDB::classes.getptr(p_class);
+	if (itype.cname == "PhysicsDirectSpaceState3D") {
+		ArgumentInterface arg;
+
+		TypeReference arg_ref;
+		arg_ref.cname = "PhysicsShapeQueryParameters3D";
+		arg.type = arg_ref;
+		arg.name = "parameters";
+
+		uint32_t hash = 1;
+
+		MethodInterface imethod;
+		imethod.hash = hash;
+		imethod.return_type = TypeReference("ShapeRestInfo");
+		imethod.proxy_name = "GetRestInfo";
+
+		StringName name("_get_rest_info");
+		imethod.cname = name;
+		imethod.name = name;
+
+		imethod.is_compat = false;
+		imethod.is_hidden = false;
+		imethod.is_deprecated = false;
+		imethod.is_internal = false;
+		imethod.is_vararg = false;
+		imethod.is_static = false;
+		imethod.is_virtual = false;
+
+		imethod.add_argument(arg);
+
+		itype.methods.push_back(imethod);
+	}
+}
+
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
@@ -4227,6 +4262,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				itype.methods.push_back(imethod);
 			}
 		}
+
+		_add_custom_methods(itype);
 
 		// Add compat methods that don't conflict with other methods in the type.
 		for (const MethodInterface &imethod : compat_methods) {
@@ -4744,6 +4781,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	INSERT_STRUCT_TYPE(Vector4, Vector4)
 	INSERT_STRUCT_TYPE(Vector4i, Vector4I)
 	INSERT_STRUCT_TYPE(Projection, Projection)
+	INSERT_STRUCT_TYPE(ShapeRestInfo, ShapeRestInfo)
 
 #undef INSERT_STRUCT_TYPE
 

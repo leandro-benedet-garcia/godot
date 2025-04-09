@@ -667,6 +667,7 @@ class BindingsGenerator {
 
 	void _initialize_blacklisted_methods();
 	void _initialize_compat_singletons();
+	void _add_custom_methods(TypeInterface &itype);
 
 	struct NameCache {
 		StringName type_void = StaticCString::create("void");
