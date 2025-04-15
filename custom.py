@@ -1,4 +1,3 @@
-module_mono_enabled = "yes"
 module_gdscript_enabled = "no"
 module_enet_enabled = "no"
 module_fbx_enabled = "no"
