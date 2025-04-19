@@ -1,8 +1,9 @@
 # Fork Changes
 * Merged https://github.com/godotengine/godot/pull/101676
 * Merged https://github.com/godotengine/godot/pull/103671
-
-Disabled actions for iOs and mac, since I don't plan to support them.
+* Merged https://github.com/godotengine/godot/pull/59595
+* Added Distcc environment variables to Scons
+* Disabled actions for iOs and mac, since I don't plan to support them.
 
 # Godot Engine
 

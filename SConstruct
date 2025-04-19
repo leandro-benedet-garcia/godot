@@ -113,6 +113,20 @@ for x in sorted(glob.glob("platform/*")):
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
 env = Environment(tools=[])
 env.PrependENVPath("PATH", os.getenv("PATH"))
+
+############ Distcc Environment Variables ############
+# Needed for distcc to find it's directory
+env.PrependENVPath("HOME", os.getenv("HOME"))
+
+env.PrependENVPath("DISTCC_HOSTS", os.getenv("DISTCC_HOSTS"))
+env.PrependENVPath("DISTCC_LOCATION", os.getenv("DISTCC_LOCATION"))
+env.PrependENVPath("DISTCC_POTENTIAL_HOSTS", os.getenv("DISTCC_POTENTIAL_HOSTS"))
+env.PrependENVPath("DISTCC_HOSTS", os.getenv("DISTCC_HOSTS"))
+env.PrependENVPath("LSDISTCC_ARGS", os.getenv("LSDISTCC_ARGS"))
+env.PrependENVPath("INCLUDE_SERVER_ARGS", os.getenv("INCLUDE_SERVER_ARGS"))
+env.PrependENVPath("INCLUDE_SERVER_PORT", os.getenv("INCLUDE_SERVER_PORT"))
+env.PrependENVPath("PYTHONOPTIMIZE", os.getenv("PYTHONOPTIMIZE"))
+
 env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
     env["ENV"]["TERM"] = os.environ["TERM"]

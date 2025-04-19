@@ -2405,6 +2405,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class) {
 	const DocTools *doc = EditorHelp::get_doc_data();
 
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 	bool is_native = false;
 	{
 		const HashMap<String, DocData::ClassDoc>::ConstIterator E = doc->class_list.find(p_class);
@@ -2412,6 +2413,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			is_native = true;
 		}
 	}
+#endif
 
 	const bool using_tab_indent = int(EDITOR_GET("text_editor/behavior/indent/type")) == 0;
 
