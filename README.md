@@ -7,6 +7,8 @@
 
 ## Backported changes:
 * Merged https://github.com/godotengine/godot/pull/83027
+* Merged https://github.com/godotengine/godot/pull/105611
+* Merged https://github.com/godotengine/godot/pull/104689
 
 # Godot Engine
 
