@@ -5,6 +5,9 @@
 * Added Distcc environment variables to Scons
 * Disabled actions for iOs and mac, since I don't plan to support them.
 
+## Backported changes:
+* Merged https://github.com/godotengine/godot/pull/83027
+
 # Godot Engine
 
 <p align="center">
