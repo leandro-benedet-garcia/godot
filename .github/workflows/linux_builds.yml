@@ -59,6 +59,16 @@ jobs:
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
 
+          - name: Editor without GDscript (module_gdscript_use=no, target=editor, tests=yes, dev_build=yes)
+            cache-name: linux-editor-without-gdscript
+            target: editor
+            sconsflags: dev_build=yes module_gdscript_use=no
+            bin: ./bin/godot.linuxbsd.editor.dev.x86_64
+            build-mono: false
+            tests: true
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
             target: editor
