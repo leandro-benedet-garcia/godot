@@ -802,13 +802,19 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			Array args = { c.r, c.g, c.b, c.a };
 			RETURN_ARGS;
 		} break;
-
+		case Variant::LEAN_OBJECT:
 		case Variant::OBJECT: {
 			ERR_FAIL_COND_V(!p_full_objects, Variant());
 
 			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Variant(), "Variant is too deep. Bailing.");
 
-			const Object *obj = p_variant.get_validated_object();
+			LeanObject *obj;
+			if (p_variant.get_type() == Variant::OBJECT) {
+				obj = p_variant.get_validated_object();
+			} else {
+				obj = p_variant.get_validated_lean_object();
+			}
+
 			if (obj == nullptr) {
 				return Variant();
 			}

@@ -184,6 +184,10 @@ void Variant::_register_variant_constructors() {
 	add_constructor<VariantConstructNoArgs<::RID>>(sarray());
 	add_constructor<VariantConstructor<::RID, ::RID>>(sarray("from"));
 
+	add_constructor<VariantConstructNoArgsLeanObject>(sarray());
+	add_constructor<VariantConstructorLeanObject>(sarray("from"));
+	add_constructor<VariantConstructorNilLeanObject>(sarray("from"));
+
 	add_constructor<VariantConstructNoArgsObject>(sarray());
 	add_constructor<VariantConstructorObject>(sarray("from"));
 	add_constructor<VariantConstructorNilObject>(sarray("from"));

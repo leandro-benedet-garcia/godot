@@ -113,8 +113,8 @@ public:
 	virtual bool is_valid() const { return true; }
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
-	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const = 0;
+	virtual Variant call(LeanObject *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
+	virtual void validated_call(LeanObject *p_object, const Variant **p_args, Variant *r_ret) const = 0;
 
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const = 0;
 
@@ -165,7 +165,7 @@ public:
 	}
 #endif // DEBUG_ENABLED
 
-	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+	virtual void validated_call(LeanObject *p_object, const Variant **p_args, Variant *r_ret) const override {
 		ERR_FAIL_MSG("Validated call can't be used with vararg methods. This is a bug.");
 	}
 

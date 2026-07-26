@@ -609,6 +609,8 @@ static GDExtensionVariantFromTypeConstructorFunc gdextension_get_variant_from_ty
 			return VariantTypeConstructor<NodePath>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_RID:
 			return VariantTypeConstructor<RID>::variant_from_type;
+		case GDEXTENSION_VARIANT_TYPE_LEAN_OBJECT:
+			return VariantTypeConstructor<LeanObject *>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_OBJECT:
 			return VariantTypeConstructor<Object *>::variant_from_type;
 		case GDEXTENSION_VARIANT_TYPE_CALLABLE:
@@ -694,6 +696,8 @@ static GDExtensionTypeFromVariantConstructorFunc gdextension_get_variant_to_type
 			return VariantTypeConstructor<NodePath>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_RID:
 			return VariantTypeConstructor<RID>::type_from_variant;
+		case GDEXTENSION_VARIANT_TYPE_LEAN_OBJECT:
+			return VariantTypeConstructor<LeanObject *>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_OBJECT:
 			return VariantTypeConstructor<Object *>::type_from_variant;
 		case GDEXTENSION_VARIANT_TYPE_CALLABLE:
@@ -779,6 +783,8 @@ static GDExtensionVariantGetInternalPtrFunc gdextension_variant_get_ptr_internal
 			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<NodePath *(*)(Variant *)>(VariantInternal::get_node_path));
 		case GDEXTENSION_VARIANT_TYPE_RID:
 			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<RID *(*)(Variant *)>(VariantInternal::get_rid));
+		case GDEXTENSION_VARIANT_TYPE_LEAN_OBJECT:
+			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<LeanObject **(*)(Variant *)>(VariantInternal::get_lean_object));
 		case GDEXTENSION_VARIANT_TYPE_OBJECT:
 			return reinterpret_cast<GDExtensionVariantGetInternalPtrFunc>(static_cast<Object **(*)(Variant *)>(VariantInternal::get_object));
 		case GDEXTENSION_VARIANT_TYPE_CALLABLE:

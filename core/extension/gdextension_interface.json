@@ -132,68 +132,72 @@
                     "value": 23
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_OBJECT",
+                    "name": "GDEXTENSION_VARIANT_TYPE_LEAN_OBJECT",
                     "value": 24
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_CALLABLE",
+                    "name": "GDEXTENSION_VARIANT_TYPE_OBJECT",
                     "value": 25
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_SIGNAL",
+                    "name": "GDEXTENSION_VARIANT_TYPE_CALLABLE",
                     "value": 26
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_DICTIONARY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_SIGNAL",
                     "value": 27
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_DICTIONARY",
                     "value": 28
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_BYTE_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_ARRAY",
                     "value": 29
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_INT32_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_BYTE_ARRAY",
                     "value": 30
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_INT64_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_INT32_ARRAY",
                     "value": 31
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT32_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_INT64_ARRAY",
                     "value": 32
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT64_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT32_ARRAY",
                     "value": 33
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_STRING_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_FLOAT64_ARRAY",
                     "value": 34
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_STRING_ARRAY",
                     "value": 35
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR2_ARRAY",
                     "value": 36
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR3_ARRAY",
                     "value": 37
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_COLOR_ARRAY",
                     "value": 38
                 },
                 {
-                    "name": "GDEXTENSION_VARIANT_TYPE_VARIANT_MAX",
+                    "name": "GDEXTENSION_VARIANT_TYPE_PACKED_VECTOR4_ARRAY",
                     "value": 39
+                },
+                {
+                    "name": "GDEXTENSION_VARIANT_TYPE_VARIANT_MAX",
+                    "value": 40
                 }
             ]
         },

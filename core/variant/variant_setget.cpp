@@ -1186,7 +1186,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid,
 	if (r_err_code) {
 		*r_err_code = VariantSetError::SET_OK;
 	}
-	if (type == DICTIONARY || type == OBJECT) {
+	if (type == DICTIONARY || type == OBJECT || type == LEAN_OBJECT) {
 		bool valid;
 		set_keyed(p_index, p_value, valid);
 		if (r_valid) {
@@ -1237,7 +1237,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid, VariantGetError *r_e
 		*r_err_code = VariantGetError::GET_OK;
 	}
 	Variant ret;
-	if (type == DICTIONARY || type == OBJECT) {
+	if (type == DICTIONARY || type == OBJECT || type == LEAN_OBJECT) {
 		bool valid;
 		ret = get_keyed(p_index, valid);
 		if (r_valid) {
@@ -1293,6 +1293,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(dic->get_valid(kv.key).get_type(), kv.key));
 			}
 		}
+	} else if (type == LEAN_OBJECT) {
+		LeanObject *obj = get_validated_lean_object();
+		ERR_FAIL_NULL(obj);
+		// TODO: get_property_list
+		//obj->get_property_list(p_list);
+
 	} else if (type == OBJECT) {
 		Object *obj = get_validated_object();
 		ERR_FAIL_NULL(obj);
@@ -1981,6 +1987,13 @@ Variant Variant::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mo
 
 Variant Variant::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const {
 	switch (type) {
+		case LEAN_OBJECT: {
+			// If the root target of duplicate() is a Resource, we can't early-reject because that
+			// resource itself must be duplicated, much as if Resource::duplicate() had been called.
+			if (p_deep_subresources_mode == RESOURCE_DEEP_DUPLICATE_NONE && p_recursion_count > 0) {
+				return *this;
+			}
+		} break;
 		case OBJECT: {
 			// If the root target of duplicate() is a Resource, we can't early-reject because that
 			// resource itself must be duplicated, much as if Resource::duplicate() had been called.

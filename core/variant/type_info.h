@@ -199,6 +199,22 @@ template <typename T>
 class RequiredResult;
 
 template <typename T>
+struct GetTypeInfo<RequiredParam<T>, std::enable_if_t<std::is_base_of_v<LeanObject, T>>> {
+	static const Variant::Type VARIANT_TYPE = Variant::LEAN_OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
+
+	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::LEAN_OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
+	}
+
+	template <typename U = T, std::enable_if_t<!std::is_base_of_v<RefCounted, U>, int> = 0>
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(StringName(T::get_class_static()));
+	}
+};
+/*
+template <typename T>
 struct GetTypeInfo<RequiredParam<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_OBJECT_IS_REQUIRED;
@@ -213,6 +229,7 @@ struct GetTypeInfo<RequiredParam<T>, std::enable_if_t<std::is_base_of_v<Object, 
 		return PropertyInfo(StringName(T::get_class_static()));
 	}
 };
+*/
 
 template <typename T>
 struct GetTypeInfo<RequiredResult<T>, std::enable_if_t<std::is_base_of_v<Object, T>>> {

@@ -1503,7 +1503,7 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 #endif
 }
 
-void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
+void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const LeanObject *p_validator) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);

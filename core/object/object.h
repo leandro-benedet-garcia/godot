@@ -32,16 +32,15 @@
 
 #include "core/extension/gdextension_interface.gen.h"
 #include "core/object/gdtype.h"
+#include "core/object/lean_object.h"
 #include "core/object/method_info.h"
 #include "core/object/object_gdextension.h"
-#include "core/object/object_id.h"
 #include "core/object/property_info.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
-#include "core/variant/variant.h"
 
 #define ADD_SIGNAL(m_signal) get_gdtype_static_mutable().add_signal(m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, StringName(m_setter), StringName(m_getter))
@@ -69,7 +68,6 @@
 
 // API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
-class GDExtension;
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
 #define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -277,7 +275,6 @@ public: \
 private:
 
 class ClassDB;
-class ScriptInstance;
 
 /**
  * Base class for all OBJECT Variant types.
@@ -285,7 +282,7 @@ class ScriptInstance;
  * For documentation, see:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/object_class.html
  */
-class Object {
+class Object : public LeanObject {
 public:
 	typedef Object self_type;
 
@@ -337,15 +334,9 @@ public:
 	};
 
 private:
-#ifdef DEBUG_ENABLED
-	friend struct _ObjectDebugLock;
-#endif // DEBUG_ENABLED
 	friend struct ObjectSignalLock;
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
-
-	ObjectGDExtension *_extension = nullptr;
-	GDExtensionClassInstancePtr _extension_instance = nullptr;
 
 	struct SignalData {
 		struct Slot {
@@ -361,10 +352,7 @@ private:
 	mutable Mutex *signal_mutex = nullptr;
 	HashMap<StringName, SignalData> signal_map;
 	List<Connection> connections;
-#ifdef DEBUG_ENABLED
-	SafeRefCount _lock_index;
-#endif // DEBUG_ENABLED
-	ObjectID _instance_id;
+
 	bool _predelete();
 	void _initialize();
 	void _postinitialize();
@@ -374,7 +362,6 @@ private:
 	bool _block_signals : 1;
 	bool _can_translate : 1;
 	bool _emitting : 1;
-	bool _predelete_ok : 1;
 
 public:
 	bool _is_queued_for_deletion : 1; // Set to true by SceneTree::queue_delete().
@@ -385,8 +372,6 @@ private:
 	uint32_t _edited_version = 0;
 	HashSet<String> editor_section_folding;
 #endif
-	ScriptInstance *script_instance = nullptr;
-	HashMap<StringName, Variant> metadata;
 	HashMap<StringName, Variant *> metadata_properties;
 	mutable const GDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
@@ -427,14 +412,6 @@ private:
 	friend class RefCounted;
 
 	BinaryMutex _instance_binding_mutex;
-	struct InstanceBinding {
-		void *binding = nullptr;
-		void *token = nullptr;
-		GDExtensionInstanceBindingFreeCallback free_callback = nullptr;
-		GDExtensionInstanceBindingReferenceCallback reference_callback = nullptr;
-	};
-	InstanceBinding *_instance_bindings = nullptr;
-	uint32_t _instance_binding_count = 0;
 
 	Object(bool p_reference);
 
@@ -465,7 +442,6 @@ protected:
 	virtual void _initialize_classv() { initialize_class(); }
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; }
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; }
-	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {}
 	virtual void _validate_propertyv(PropertyInfo &p_property) const {}
 	virtual bool _property_can_revertv(const StringName &p_name) const { return false; }
 	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; }
@@ -569,7 +545,6 @@ public:
 	}
 
 	void detach_from_objectdb();
-	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
 	template <typename T, typename O>
 	static T *cast_to(O *p_object) {
@@ -613,7 +588,6 @@ public:
 
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	bool is_class(const StringName &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	template <typename T, typename O>
@@ -630,7 +604,6 @@ public:
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
-	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 	void validate_property(PropertyInfo &p_property) const;
 	bool property_can_revert(const StringName &p_name) const;
 	Variant property_get_revert(const StringName &p_name) const;

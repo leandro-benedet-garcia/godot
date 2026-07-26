@@ -455,6 +455,7 @@ int64_t GLTFAccessor::_get_numbers_per_variant_for_gltf(Variant::Type p_variant_
 		case Variant::STRING_NAME:
 		case Variant::NODE_PATH:
 		case Variant::RID:
+		case Variant::LEAN_OBJECT:
 		case Variant::OBJECT:
 		case Variant::CALLABLE:
 		case Variant::SIGNAL:

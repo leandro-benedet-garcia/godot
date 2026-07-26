@@ -5075,6 +5075,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 								error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::STRING && index_type.builtin_type != Variant::STRING_NAME;
 								break;
 							// Don't support indexing, but we will check it later.
+							case Variant::LEAN_OBJECT:
 							case Variant::RID:
 							case Variant::BOOL:
 							case Variant::CALLABLE:
@@ -5151,6 +5152,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 					case Variant::NIL:
 					case Variant::NODE_PATH:
 					case Variant::SIGNAL:
+					case Variant::LEAN_OBJECT:
 					case Variant::STRING_NAME:
 						result_type.kind = GDScriptParser::DataType::VARIANT;
 						push_error(vformat(R"(Cannot use subscript operator on a base of type "%s".)", base_type.to_string()), p_subscript->base);

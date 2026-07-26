@@ -468,6 +468,43 @@ public:
 	using ReturnType = bool;
 };
 
+class OperatorEvaluatorEqualLeanObject : public CommonEvaluate<OperatorEvaluatorEqualLeanObject> {
+public:
+	static inline void validated_evaluate(const Variant *p_left, const Variant *p_right, Variant *r_ret) {
+		const LeanObject *a = p_left->get_validated_object();
+		const LeanObject *b = p_right->get_validated_object();
+		VariantInternalAccessor<bool>::get(r_ret) = a == b;
+	}
+	static void ptr_evaluate(const void *p_left, const void *p_right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<LeanObject *>::convert(p_left) == PtrToArg<LeanObject *>::convert(p_right), r_ret);
+	}
+	using ReturnType = bool;
+};
+
+class OperatorEvaluatorEqualLeanObjectNil : public CommonEvaluate<OperatorEvaluatorEqualLeanObjectNil> {
+public:
+	static inline void validated_evaluate(const Variant *p_left, const Variant *p_right, Variant *r_ret) {
+		const LeanObject *a = p_left->get_validated_object();
+		VariantInternalAccessor<bool>::get(r_ret) = a == nullptr;
+	}
+	static void ptr_evaluate(const void *p_left, const void *p_right, void *r_ret) {
+		PtrToArg<bool>::encode(PtrToArg<LeanObject *>::convert(p_left) == nullptr, r_ret);
+	}
+	using ReturnType = bool;
+};
+
+class OperatorEvaluatorEqualNilLeanObject : public CommonEvaluate<OperatorEvaluatorEqualNilLeanObject> {
+public:
+	static inline void validated_evaluate(const Variant *p_left, const Variant *p_right, Variant *r_ret) {
+		const LeanObject *b = p_right->get_validated_object();
+		VariantInternalAccessor<bool>::get(r_ret) = nullptr == b;
+	}
+	static void ptr_evaluate(const void *p_left, const void *p_right, void *r_ret) {
+		PtrToArg<bool>::encode(nullptr == PtrToArg<LeanObject *>::convert(p_right), r_ret);
+	}
+	using ReturnType = bool;
+};
+
 class OperatorEvaluatorEqualObject : public CommonEvaluate<OperatorEvaluatorEqualObject> {
 public:
 	static inline void validated_evaluate(const Variant *p_left, const Variant *p_right, Variant *r_ret) {

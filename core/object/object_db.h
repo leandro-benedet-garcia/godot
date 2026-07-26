@@ -47,7 +47,7 @@ class ObjectDB {
 		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
 		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
 		uint64_t is_ref_counted : 1;
-		Object *object = nullptr;
+		LeanObject *object = nullptr;
 	};
 
 	static SpinLock spin_lock;
@@ -57,19 +57,20 @@ class ObjectDB {
 	static uint64_t validator_counter;
 
 	friend class Object;
+	friend class LeanObject;
 	friend void unregister_core_types();
 	static void cleanup();
 
-	static ObjectID add_instance(Object *p_object);
-	static void remove_instance(Object *p_object);
+	static ObjectID add_instance(LeanObject *p_object);
+	static void remove_instance(LeanObject *p_object);
 
 	friend void register_core_types();
 	static void setup();
 
 public:
-	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
+	typedef void (*DebugFunc)(LeanObject *p_obj, void *p_user_data);
 
-	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
+	_ALWAYS_INLINE_ static LeanObject *get_instance(ObjectID p_instance_id) {
 		uint64_t id = p_instance_id;
 		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
 
@@ -84,7 +85,7 @@ public:
 			return nullptr;
 		}
 
-		Object *object = object_slots[slot].object;
+		LeanObject *object = object_slots[slot].object;
 
 		spin_lock.unlock();
 

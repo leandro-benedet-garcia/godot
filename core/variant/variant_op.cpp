@@ -431,6 +431,7 @@ void Variant::_register_variant_operators() {
 	register_string_modulo_op(StringName, Variant::STRING_NAME);
 	register_string_modulo_op(NodePath, Variant::NODE_PATH);
 	register_string_modulo_op(::RID, Variant::RID);
+	register_string_modulo_op(LeanObject, Variant::LEAN_OBJECT);
 	register_string_modulo_op(Object, Variant::OBJECT);
 	register_string_modulo_op(Callable, Variant::CALLABLE);
 	register_string_modulo_op(Signal, Variant::SIGNAL);
@@ -510,6 +511,10 @@ void Variant::_register_variant_operators() {
 
 	register_op<OperatorEvaluatorEqual<NodePath, NodePath>>(Variant::OP_EQUAL, Variant::NODE_PATH, Variant::NODE_PATH);
 	register_op<OperatorEvaluatorEqual<::RID, ::RID>>(Variant::OP_EQUAL, Variant::RID, Variant::RID);
+
+	register_op<OperatorEvaluatorEqualLeanObject>(Variant::OP_EQUAL, Variant::LEAN_OBJECT, Variant::LEAN_OBJECT);
+	register_op<OperatorEvaluatorEqualLeanObjectNil>(Variant::OP_EQUAL, Variant::LEAN_OBJECT, Variant::NIL);
+	register_op<OperatorEvaluatorEqualNilLeanObject>(Variant::OP_EQUAL, Variant::NIL, Variant::LEAN_OBJECT);
 
 	register_op<OperatorEvaluatorEqualObject>(Variant::OP_EQUAL, Variant::OBJECT, Variant::OBJECT);
 	register_op<OperatorEvaluatorEqualObjectNil>(Variant::OP_EQUAL, Variant::OBJECT, Variant::NIL);

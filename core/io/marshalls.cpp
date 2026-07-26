@@ -696,6 +696,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 
 			r_variant = RID::from_uint64(id);
 		} break;
+		case Variant::LEAN_OBJECT:
 		case Variant::OBJECT: {
 			if (header & HEADER_DATA_FLAG_OBJECT_AS_ID) {
 				// This _is_ allowed.

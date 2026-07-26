@@ -139,6 +139,9 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case RID: {
 			return "RID";
 		}
+		case LEAN_OBJECT: {
+			return "LeanObject";
+		}
 		case OBJECT: {
 			return "Object";
 		}
@@ -220,6 +223,10 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	}
 	if (p_type_to == NIL) { //nil can convert to anything
 		return true;
+	}
+
+	if (p_type_from == NIL) {
+		return (p_type_to == LEAN_OBJECT);
 	}
 
 	if (p_type_from == NIL) {
@@ -410,6 +417,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 			valid_types = valid;
 		} break;
+		case LEAN_OBJECT:
 		case OBJECT: {
 			static const Type valid[] = {
 				NIL
@@ -563,6 +571,10 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	}
 	if (p_type_to == NIL) { //nil can convert to anything
 		return true;
+	}
+
+	if (p_type_from == NIL) {
+		return (p_type_to == LEAN_OBJECT);
 	}
 
 	if (p_type_from == NIL) {
@@ -753,6 +765,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 			valid_types = valid;
 		} break;
+		case LEAN_OBJECT:
 		case OBJECT: {
 			static const Type valid[] = {
 				NIL
@@ -977,6 +990,9 @@ bool Variant::is_zero() const {
 		case RID: {
 			return *reinterpret_cast<const ::RID *>(_data._mem) == ::RID();
 		}
+		case LEAN_OBJECT: {
+			return get_validated_lean_object() == nullptr;
+		}
 		case OBJECT: {
 			return get_validated_object() == nullptr;
 		}
@@ -1092,7 +1108,7 @@ bool Variant::is_one() const {
 }
 
 bool Variant::is_null() const {
-	if (type == OBJECT && _get_obj().obj) {
+	if ((type == OBJECT && _get_obj().obj) || (type == LEAN_OBJECT && _get_lean_obj().obj)) {
 		return false;
 	} else {
 		return true;
@@ -1154,9 +1170,46 @@ void Variant::ObjData::unref() {
 	*this = ObjData();
 }
 
+void Variant::LeanObjData::ref(const LeanObjData &p_from) {
+	// Mirrors Ref::ref in refcounted.h
+	if (p_from.id == id) {
+		return;
+	}
+
+	LeanObjData cleanup_ref = *this;
+	*this = p_from;
+	cleanup_ref.unref();
+}
+
+void Variant::LeanObjData::ref_pointer(LeanObject *p_object) {
+	// Mirrors Ref::ref_pointer in refcounted.h
+	if (p_object == obj) {
+		return;
+	}
+
+	LeanObjData cleanup_ref = *this;
+
+	if (p_object) {
+		*this = LeanObjData{ p_object->get_instance_id(), p_object };
+	} else {
+		*this = LeanObjData();
+	}
+
+	cleanup_ref.unref();
+}
+
+void Variant::LeanObjData::unref() {
+	*this = LeanObjData();
+}
+
 void Variant::reference(const Variant &p_variant) {
 	if (type == OBJECT && p_variant.type == OBJECT) {
 		_get_obj().ref(p_variant._get_obj());
+		return;
+	}
+
+	if (type == LEAN_OBJECT && p_variant.type == LEAN_OBJECT) {
+		_get_lean_obj().ref(p_variant._get_lean_obj());
 		return;
 	}
 
@@ -1241,6 +1294,10 @@ void Variant::reference(const Variant &p_variant) {
 		} break;
 		case RID: {
 			memnew_placement(_data._mem, ::RID(*reinterpret_cast<const ::RID *>(p_variant._data._mem)));
+		} break;
+		case LEAN_OBJECT: {
+			memnew_placement(_data._mem, LeanObjData);
+			_get_lean_obj().ref(p_variant._get_lean_obj());
 		} break;
 		case OBJECT: {
 			memnew_placement(_data._mem, ObjData);
@@ -1442,6 +1499,9 @@ void Variant::_clear_internal() {
 		case NODE_PATH: {
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
 		} break;
+		case LEAN_OBJECT: {
+			_get_lean_obj().unref();
+		} break;
 		case OBJECT: {
 			_get_obj().unref();
 		} break;
@@ -1545,6 +1605,8 @@ Variant::operator Math::uint_alt_t() const {
 Variant::operator ObjectID() const {
 	if (type == INT) {
 		return ObjectID(_data._int);
+	} else if (type == LEAN_OBJECT) {
+		return _get_lean_obj().id;
 	} else if (type == OBJECT) {
 		return _get_obj().id;
 	} else {
@@ -1736,6 +1798,19 @@ String Variant::stringify(int p_recursion_count) const {
 			p_recursion_count++;
 
 			return stringify_vector(operator Array(), p_recursion_count);
+		}
+		case LEAN_OBJECT: {
+			if (_get_lean_obj().obj) {
+				if (!_get_lean_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_lean_obj().id) == nullptr) {
+					return "<Freed LeanObject>";
+				}
+
+				// TODO: Implement to_string
+				//return _get_lean_obj().obj->to_string();
+				return "<LeanObject>";
+			} else {
+				return "<LeanObject#null>";
+			}
 		}
 		case OBJECT: {
 			if (_get_obj().obj) {
@@ -2046,6 +2121,25 @@ Variant::operator ::RID() const {
 		return ::RID();
 	} else {
 		return ::RID();
+	}
+}
+
+LeanObject *Variant::get_validated_lean_object_with_check(bool &r_previously_freed) const {
+	if (type == LEAN_OBJECT) {
+		Object *instance = ObjectDB::get_instance(_get_lean_obj().id);
+		r_previously_freed = !instance && _get_lean_obj().id != ObjectID();
+		return instance;
+	} else {
+		r_previously_freed = false;
+		return nullptr;
+	}
+}
+
+LeanObject *Variant::get_validated_lean_object() const {
+	if (type == LEAN_OBJECT) {
+		return ObjectDB::get_instance(_get_lean_obj().id);
+	} else {
+		return nullptr;
 	}
 }
 
@@ -2532,6 +2626,12 @@ Variant::Variant(const ::RID &p_rid) :
 	static_assert(sizeof(::RID) <= sizeof(_data._mem));
 }
 
+Variant::Variant(const LeanObject *p_lean_object) :
+		type(LEAN_OBJECT) {
+	_get_lean_obj() = LeanObjData();
+	_get_lean_obj().ref_pointer(const_cast<LeanObject *>(p_lean_object));
+}
+
 Variant::Variant(const Object *p_object) :
 		type(OBJECT) {
 	_get_obj() = ObjData();
@@ -2762,6 +2862,9 @@ void Variant::operator=(const Variant &p_variant) {
 		case RID: {
 			*reinterpret_cast<::RID *>(_data._mem) = *reinterpret_cast<const ::RID *>(p_variant._data._mem);
 		} break;
+		case LEAN_OBJECT: {
+			_get_lean_obj().ref(p_variant._get_lean_obj());
+		} break;
 		case OBJECT: {
 			_get_obj().ref(p_variant._get_obj());
 		} break;
@@ -2974,6 +3077,9 @@ uint32_t Variant::recursive_hash(int p_recursion_count) const {
 		} break;
 		case RID: {
 			return hash_one_uint64(reinterpret_cast<const ::RID *>(_data._mem)->get_id());
+		} break;
+		case LEAN_OBJECT: {
+			return hash_one_uint64(reinterpret_cast<uint64_t>(_get_lean_obj().obj));
 		} break;
 		case OBJECT: {
 			return hash_one_uint64(reinterpret_cast<uint64_t>(_get_obj().obj));
@@ -3390,6 +3496,9 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 	}
 
 	switch (type) {
+		case LEAN_OBJECT: {
+			return _get_lean_obj().id == p_variant._get_lean_obj().id;
+		} break;
 		case OBJECT: {
 			return _get_obj().id == p_variant._get_obj().id;
 		} break;
@@ -3464,6 +3573,7 @@ bool Variant::is_ref_counted() const {
 
 bool Variant::is_type_shared(Variant::Type p_type) {
 	switch (p_type) {
+		case LEAN_OBJECT:
 		case OBJECT:
 		case DICTIONARY:
 		case ARRAY:

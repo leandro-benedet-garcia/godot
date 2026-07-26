@@ -71,6 +71,13 @@ MAKE_PTRCONSTRUCT(NodePath);
 MAKE_PTRCONSTRUCT(RID);
 
 template <>
+struct PtrConstruct<LeanObject *> {
+	_FORCE_INLINE_ static void construct(LeanObject *p_value, void *p_ptr) {
+		*((LeanObject **)p_ptr) = p_value;
+	}
+};
+
+template <>
 struct PtrConstruct<Object *> {
 	_FORCE_INLINE_ static void construct(Object *p_value, void *p_ptr) {
 		*((Object **)p_ptr) = p_value;
@@ -144,7 +151,7 @@ public:
 	}
 };
 
-class VariantConstructorObject {
+class VariantConstructorLeanObject {
 public:
 	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
 		if (p_args[0]->get_type() == Variant::NIL) {
@@ -182,6 +189,83 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::OBJECT;
+	}
+};
+
+class VariantConstructorObject {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() == Variant::NIL) {
+			VariantInternal::clear(&r_ret);
+			VariantTypeChanger<LeanObject *>::change(&r_ret);
+			VariantInternal::object_reset_data(&r_ret);
+			r_error.error = Callable::CallError::CALL_OK;
+		} else if (p_args[0]->get_type() == Variant::LEAN_OBJECT) {
+			VariantTypeChanger<Object *>::change(&r_ret);
+			VariantInternal::object_assign(&r_ret, p_args[0]);
+			r_error.error = Callable::CallError::CALL_OK;
+		} else {
+			VariantInternal::clear(&r_ret);
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::LEAN_OBJECT;
+		}
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantTypeChanger<LeanObject *>::change(r_ret);
+		VariantInternal::object_assign(r_ret, p_args[0]);
+	}
+	static void ptr_construct(void *p_base, const void **p_args) {
+		PtrConstruct<LeanObject *>::construct(PtrToArg<LeanObject *>::convert(p_args[0]), p_base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::LEAN_OBJECT;
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::LEAN_OBJECT;
+	}
+};
+
+class VariantConstructorNilLeanObject {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		if (p_args[0]->get_type() != Variant::NIL) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+		}
+
+		VariantInternal::clear(&r_ret);
+		VariantTypeChanger<LeanObject *>::change(&r_ret);
+		VariantInternal::object_reset_data(&r_ret);
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		VariantInternal::clear(r_ret);
+		VariantTypeChanger<LeanObject *>::change(r_ret);
+		VariantInternal::object_reset_data(r_ret);
+	}
+	static void ptr_construct(void *p_base, const void **p_args) {
+		PtrConstruct<LeanObject *>::construct(nullptr, p_base);
+	}
+
+	static int get_argument_count() {
+		return 1;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::NIL;
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::LEAN_OBJECT;
 	}
 };
 
@@ -778,6 +862,33 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::NIL;
+	}
+};
+
+class VariantConstructNoArgsLeanObject {
+public:
+	static void construct(Variant &r_ret, const Variant **p_args, Callable::CallError &r_error) {
+		r_ret = (LeanObject *)nullptr; // Must construct a TYPE_LEAN_OBJECT containing nullptr.
+		r_error.error = Callable::CallError::CALL_OK;
+	}
+
+	static inline void validated_construct(Variant *r_ret, const Variant **p_args) {
+		*r_ret = (LeanObject *)nullptr; // Must construct a TYPE_LEAN_OBJECT containing nullptr.
+	}
+	static void ptr_construct(void *p_base, const void **p_args) {
+		PtrConstruct<LeanObject *>::construct(nullptr, p_base);
+	}
+
+	static int get_argument_count() {
+		return 0;
+	}
+
+	static Variant::Type get_argument_type(int p_arg) {
+		return Variant::NIL;
+	}
+
+	static Variant::Type get_base_type() {
+		return Variant::LEAN_OBJECT;
 	}
 };
 

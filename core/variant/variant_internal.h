@@ -221,6 +221,9 @@ public:
 	_FORCE_INLINE_ static Object **get_object(Variant *p_variant) { return (Object **)&p_variant->_get_obj().obj; }
 	_FORCE_INLINE_ static const Object **get_object(const Variant *p_variant) { return (const Object **)&p_variant->_get_obj().obj; }
 
+	_FORCE_INLINE_ static LeanObject **get_lean_object(Variant *p_variant) { return (LeanObject **)&p_variant->_get_lean_obj().obj; }
+	_FORCE_INLINE_ static const LeanObject **get_lean_object(const Variant *p_variant) { return (const LeanObject **)&p_variant->_get_lean_obj().obj; }
+
 	_FORCE_INLINE_ static const ObjectID get_object_id(const Variant *p_variant) { return p_variant->_get_obj().id; }
 
 	template <typename T>
@@ -333,6 +336,10 @@ public:
 		r_variant->_data.packed_array = Variant::PackedArrayRef<Vector4>::create(Vector<Vector4>());
 		r_variant->type = Variant::PACKED_VECTOR4_ARRAY;
 	}
+	_FORCE_INLINE_ static void init_lean_object(Variant *r_variant) {
+		lean_object_reset_data(r_variant);
+		r_variant->type = Variant::LEAN_OBJECT;
+	}
 	_FORCE_INLINE_ static void init_object(Variant *r_variant) {
 		object_reset_data(r_variant);
 		r_variant->type = Variant::OBJECT;
@@ -367,6 +374,10 @@ public:
 		Variant::ObjData &obj_data = r_variant->_get_obj();
 		obj_data.id = p_object->get_instance_id();
 		obj_data.obj = p_object;
+	}
+
+	_FORCE_INLINE_ static void lean_object_reset_data(Variant *r_variant) {
+		r_variant->_get_lean_obj() = Variant::LeanObjData();
 	}
 
 	_FORCE_INLINE_ static void object_reset_data(Variant *r_variant) {
@@ -458,6 +469,8 @@ public:
 				return get_color_array(p_variant);
 			case Variant::PACKED_VECTOR4_ARRAY:
 				return get_vector4_array(p_variant);
+			case Variant::LEAN_OBJECT:
+				return get_lean_object(p_variant);
 			case Variant::OBJECT:
 				return get_object(p_variant);
 			case Variant::VARIANT_MAX:
@@ -544,6 +557,8 @@ public:
 				return get_color_array(p_variant);
 			case Variant::PACKED_VECTOR4_ARRAY:
 				return get_vector4_array(p_variant);
+			case Variant::LEAN_OBJECT:
+				return get_lean_object(p_variant);
 			case Variant::OBJECT:
 				return get_object(p_variant);
 			case Variant::VARIANT_MAX:
@@ -931,6 +946,11 @@ struct VariantInitializer<PackedColorArray> {
 template <>
 struct VariantInitializer<PackedVector4Array> {
 	static _FORCE_INLINE_ void init(Variant *r_variant) { VariantInternal::init_vector4_array(r_variant); }
+};
+
+template <>
+struct VariantInitializer<LeanObject *> {
+	static _FORCE_INLINE_ void init(Variant *r_variant) { VariantInternal::init_lean_object(r_variant); }
 };
 
 template <>

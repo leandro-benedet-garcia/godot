@@ -56,7 +56,7 @@ int ObjectDB::get_object_count() {
 	return slot_count;
 }
 
-ObjectID ObjectDB::add_instance(Object *p_object) {
+ObjectID ObjectDB::add_instance(LeanObject *p_object) {
 	spin_lock.lock();
 	if (unlikely(slot_count == slot_max)) {
 		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
@@ -100,7 +100,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	return ObjectID(id);
 }
 
-void ObjectDB::remove_instance(Object *p_object) {
+void ObjectDB::remove_instance(LeanObject *p_object) {
 	uint64_t t = p_object->get_instance_id();
 	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
 
@@ -152,7 +152,7 @@ void ObjectDB::cleanup() {
 
 			for (uint32_t i = 0, count = slot_count; i < slot_max && count != 0; i++) {
 				if (object_slots[i].validator) {
-					Object *obj = object_slots[i].object;
+					LeanObject *obj = object_slots[i].object;
 
 					String extra_info;
 					if (obj->is_class("Node")) {

@@ -64,6 +64,7 @@
 #include "core/variant/variant_deep_duplicate.h"
 
 class GDType;
+class LeanObject;
 class Object;
 class RefCounted;
 
@@ -125,6 +126,7 @@ public:
 		STRING_NAME,
 		NODE_PATH,
 		RID,
+		LEAN_OBJECT,
 		OBJECT,
 		CALLABLE,
 		SIGNAL,
@@ -171,6 +173,16 @@ private:
 	static void _register_variant_gdtypes();
 	static void _unregister_variant_gdtypes();
 
+#define REF(obj_name) \
+	template <typename T> \
+	_ALWAYS_INLINE_ void ref(const Ref<T> &p_from) { \
+		if (p_from.is_valid()) { \
+			ref(obj_name{ p_from->get_instance_id(), p_from.ptr() }); \
+		} else { \
+			unref(); \
+		} \
+	}
+
 	struct ObjData {
 		ObjectID id;
 		Object *obj = nullptr;
@@ -180,14 +192,18 @@ private:
 		void ref_pointer(RefCounted *p_object);
 		void unref();
 
-		template <typename T>
-		_ALWAYS_INLINE_ void ref(const Ref<T> &p_from) {
-			if (p_from.is_valid()) {
-				ref(ObjData{ p_from->get_instance_id(), p_from.ptr() });
-			} else {
-				unref();
-			}
-		}
+		REF(ObjData)
+	};
+
+	struct LeanObjData {
+		ObjectID id;
+		LeanObject *obj = nullptr;
+
+		void ref(const LeanObjData &p_from);
+		void ref_pointer(LeanObject *p_object);
+		void unref();
+
+		REF(LeanObjData)
 	};
 
 	/* array helpers */
@@ -252,6 +268,9 @@ private:
 	_ALWAYS_INLINE_ ObjData &_get_obj();
 	_ALWAYS_INLINE_ const ObjData &_get_obj() const;
 
+	_ALWAYS_INLINE_ LeanObjData &_get_lean_obj();
+	_ALWAYS_INLINE_ const LeanObjData &_get_lean_obj() const;
+
 	union {
 		bool _bool;
 		int64_t _int;
@@ -297,6 +316,7 @@ private:
 		true, //STRING_NAME,
 		true, //NODE_PATH,
 		false, //RID,
+		true, //LEAN_OBJECT,
 		true, //OBJECT,
 		true, //CALLABLE,
 		true, //SIGNAL,
@@ -451,6 +471,7 @@ public:
 	operator NodePath() const;
 	operator ::RID() const;
 
+	operator LeanObject *() const;
 	operator Object *() const;
 
 	operator Callable() const;
@@ -486,6 +507,9 @@ public:
 	_FORCE_INLINE_ operator TypedArray<T>() const { return operator Array(); }
 	template <typename K, typename V>
 	_FORCE_INLINE_ operator TypedDictionary<K, V>() const { return operator Dictionary(); }
+
+	LeanObject *get_validated_lean_object() const;
+	LeanObject *get_validated_lean_object_with_check(bool &r_previously_freed) const;
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
@@ -526,6 +550,7 @@ public:
 	Variant(const Color &p_color);
 	Variant(const NodePath &p_node_path);
 	Variant(const ::RID &p_rid);
+	Variant(const LeanObject *p_lean_object);
 	Variant(const Object *p_object);
 	Variant(const Callable &p_callable);
 	Variant(const Signal &p_signal);
@@ -910,6 +935,14 @@ Variant::ObjData &Variant::_get_obj() {
 
 const Variant::ObjData &Variant::_get_obj() const {
 	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
+}
+
+Variant::LeanObjData &Variant::_get_lean_obj() {
+	return *reinterpret_cast<LeanObjData *>(&_data._mem[0]);
+}
+
+const Variant::LeanObjData &Variant::_get_lean_obj() const {
+	return *reinterpret_cast<const LeanObjData *>(&_data._mem[0]);
 }
 
 template <typename... VarArgs>
